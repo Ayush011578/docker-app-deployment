@@ -20,14 +20,17 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-app .
 
-      - name: SCP Docker image to EC2
-        uses: appleboy/scp-action@v0.1.4
+      - name: SSH and Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          source: "./"
-          target: "~/app"
+          script: |
+          
+            rm -rf ~/docker-app-deployment
+            git clone https://github.com/Ayush011578/docker-app-deployment.git
+            cd ~/docker-app-deployment
 
       - name: SSH and Run Docker Container on EC2
         uses: appleboy/ssh-action@v1.0.0
@@ -36,7 +39,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/app
+            cd ~/docker-app-deployment
             docker build -t my-app .
             docker stop app || true
             docker rm app || true
